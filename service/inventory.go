@@ -12,19 +12,24 @@ type InventoryRepository interface {
 	Size() (int, error)
 }
 
-type InventoryService struct {
-	techCenter ServiceCenter
-	repo       InventoryRepository
+type ServiceCenter interface {
+	Inspect(item domain.Inventorizable) error
 }
 
-func NewInventoryService(repo InventoryRepository) *InventoryService {
+type InventoryService struct {
+	repo      InventoryRepository
+	inspector ServiceCenter
+}
+
+func NewInventoryService(repo InventoryRepository, inspector ServiceCenter) *InventoryService {
 	return &InventoryService{
-		repo: repo,
+		repo:      repo,
+		inspector: inspector,
 	}
 }
 
 func (s *InventoryService) AddItemToFleet(item domain.Inventorizable) error {
-	if err := s.techCenter.Approve(item); err != nil {
+	if err := s.inspector.Inspect(item); err != nil {
 		return fmt.Errorf("approve failed: %w", err)
 	}
 
@@ -56,7 +61,7 @@ func (s *InventoryService) BeginnerVehicles() ([]domain.Vehicle, error) {
 	if err != nil {
 		return nil, fmt.Errorf("all items: %w", err)
 	}
-	
+
 	var vehicles []domain.Vehicle
 	for _, item := range items {
 		if vehicle, ok := item.(domain.Vehicle); ok && s.isGoodForBeginner(vehicle) {
@@ -74,9 +79,9 @@ func (s *InventoryService) isGoodForBeginner(vehicle domain.Vehicle) bool {
 	return vehicle.Simplicity() >= 6
 }
 
-type ServiceCenter struct {
+type StupidInspector struct {
 }
 
-func (c ServiceCenter) Approve(item domain.Inventorizable) error {
+func (i StupidInspector) Inspect(item domain.Inventorizable) error {
 	return nil
 }
