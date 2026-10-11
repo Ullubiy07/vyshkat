@@ -10,7 +10,7 @@ import (
 
 func main() {
 	repo := repository.NewMemoryInventoryRepository()
-	inspector := service.StupidInspector{}
+	inspector := service.ItemInspector{}
 	service := service.NewInventoryService(repo, inspector)
 
 	scanner := bufio.NewScanner(os.Stdin)

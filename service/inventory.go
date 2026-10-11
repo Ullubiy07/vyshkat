@@ -79,9 +79,9 @@ func (s *InventoryService) isGoodForBeginner(vehicle domain.Vehicle) bool {
 	return vehicle.Simplicity() >= 6
 }
 
-type StupidInspector struct {
+type ItemInspector struct {
 }
 
-func (i StupidInspector) Inspect(item domain.Inventorizable) error {
+func (i ItemInspector) Inspect(item domain.Inventorizable) error {
 	return nil
 }

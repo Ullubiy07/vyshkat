@@ -32,7 +32,7 @@ func (h *CLIHandler) HandleRequests() {
 			"3. Вывести общую дневную энергию парка\n",
 			"4. Вывести предметы для новичков\n",
 			"5. Вывести все предметы\n",
-			"6. Выход\n",
+			"6. Выход",
 		)
 
 		choice, ok := h.readChoice(6)
@@ -53,8 +53,6 @@ func (h *CLIHandler) HandleRequests() {
 			h.handleAllItems()
 		case 6:
 			return
-		default:
-			fmt.Fprintln(h.writer, "Ошибка: неправильный тип")
 		}
 	}
 }
@@ -64,7 +62,7 @@ func (h *CLIHandler) handleAddVehicleToFleet() {
 		"1. Самокат\n",
 		"2. Велосипед\n",
 		"3. Электросамокат\n",
-		"4. Электровелосипед\n")
+		"4. Электровелосипед")
 
 	choice, ok := h.readChoice(4)
 	if !ok {

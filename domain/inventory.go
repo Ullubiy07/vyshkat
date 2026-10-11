@@ -77,9 +77,17 @@ type Bike struct {
 	Simple int
 }
 
+func (b Bike) Simplicity() int {
+	return b.Simple
+}
+
 type Scooter struct {
 	*ItemInfo
 	Simple int
+}
+
+func (s Scooter) Simplicity() int {
+	return s.Simple
 }
 
 type Helmet struct {
