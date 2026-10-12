@@ -16,8 +16,8 @@ type CLIHandler struct {
 	writer    io.Writer
 }
 
-func NewCLIHandler(inventory *service.InventoryService, scanner *bufio.Scanner, writer io.Writer) CLIHandler {
-	return CLIHandler{
+func NewCLIHandler(inventory *service.InventoryService, scanner *bufio.Scanner, writer io.Writer) *CLIHandler {
+	return &CLIHandler{
 		inventory: inventory,
 		scanner:   scanner,
 		writer:    writer,
