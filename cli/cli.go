@@ -34,7 +34,7 @@ func (h *CLIHandler) HandleRequests() {
 		if err != nil {
 			return
 		}
-		
+
 		fmt.Fprintln(h.writer)
 		switch choice {
 		case 1:
