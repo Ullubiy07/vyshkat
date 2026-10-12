@@ -64,7 +64,7 @@ func TestAddItemServiceError(t *testing.T) {
 
 	output := runCLIWithInventory("1\n1\nСамокат\n8\n6\n", inventory)
 
-	if !strings.Contains(output, "Ошибка:") {
+	if !strings.Contains(output, "Ошибка") {
 		t.Fatalf("expected inspection error, got:\n%s", output)
 	}
 }
@@ -86,7 +86,8 @@ func TestInputErrors(t *testing.T) {
 		{"vehicle type EOF", "1\n"},
 		{"vehicle name EOF", "1\n1\n"},
 		{"simplicity EOF", "1\n1\nСамокат\n"},
-		{"electric vehicle energy EOF", "1\n3\nСамокат\n8\n"},
+		{"electric vehicle3 energy EOF", "1\n3\nСамокат\n8\n"},
+		{"electric vehicle4 energy EOF", "1\n4\nСамокат\n8\n"},
 		{"item type EOF", "2\n"},
 		{"item name EOF", "2\n1\n"},
 		{"charging station energy EOF", "2\n2\nСтанция\n"},
@@ -95,7 +96,7 @@ func TestInputErrors(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			output := runCLI(tt.input)
-			if !strings.Contains(output, "Ошибка чтения:") {
+			if !strings.Contains(output, "Ошибка чтения") {
 				t.Fatalf("expected input error, got:\n%s", output)
 			}
 		})
@@ -104,10 +105,10 @@ func TestInputErrors(t *testing.T) {
 
 func TestInvalidTypeChoices(t *testing.T) {
 	tests := []string{
-		"1\nabc\n",
-		"1\n5\n",
-		"2\nabc\n",
-		"2\n3\n",
+		"1\nabc\n6\n",
+		"1\n5\n6\n",
+		"2\nabc\n6\n",
+		"2\n3\n6\n",
 	}
 
 	for _, input := range tests {
@@ -197,7 +198,7 @@ func TestBeginnerVehicles(t *testing.T) {
 }
 
 func TestInvalidMenuChoice(t *testing.T) {
-	output := runCLI("abc\n")
+	output := runCLI("abc\n6\n")
 
 	if !strings.Contains(output, "введите целое число от 1 до 6") {
 		t.Fatal("expected invalid choice error")
@@ -205,7 +206,7 @@ func TestInvalidMenuChoice(t *testing.T) {
 }
 
 func TestEmptyItemName(t *testing.T) {
-	output := runCLI("1\n1\n   \n")
+	output := runCLI("1\n1\n   \n6\n")
 
 	if !strings.Contains(output, "название не может быть пустым") {
 		t.Fatal("expected empty name error")
@@ -213,7 +214,7 @@ func TestEmptyItemName(t *testing.T) {
 }
 
 func TestInvalidSimplicity(t *testing.T) {
-	output := runCLI("1\n1\nСамокат\n11\n")
+	output := runCLI("1\n1\nСамокат\n11\n6\n")
 
 	if !strings.Contains(output, "введите целое число от 1 до 10") {
 		t.Fatal("expected simplicity validation error")
@@ -221,7 +222,7 @@ func TestInvalidSimplicity(t *testing.T) {
 }
 
 func TestInvalidEnergyConsumption(t *testing.T) {
-	output := runCLI("1\n3\nЭлектросамокат\n7\n-1\n")
+	output := runCLI("1\n3\nЭлектросамокат\n7\n-1\n6\n")
 
 	if !strings.Contains(output, "неотрицательное целое число") {
 		t.Fatal("expected energy validation error")
@@ -243,15 +244,11 @@ func TestUnexpectedEndOfInput(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			output := runCLI(tt.input)
 
-			if !strings.Contains(output, "Ошибка чтения:") {
+			if !strings.Contains(output, "Ошибка чтения") {
 				t.Fatal("expected input reading error")
 			}
 		})
 	}
-}
-
-func TestAddVehicleInvalidEnergyCLI(t *testing.T) {
-	runCLI("1\n4\nЭлектровелосипед\n8\nnot-a-number\n6\n")
 }
 
 func TestAddItemToFleetServiceError(t *testing.T) {
@@ -262,7 +259,7 @@ func TestAddItemToFleetServiceError(t *testing.T) {
 
 	output := runCLIWithInventory("2\n1\nШлем\n6\n", inventory)
 
-	if !strings.Contains(output, "Ошибка:") {
+	if !strings.Contains(output, "Ошибка") {
 		t.Fatalf("expected fleet addition error for item, got:\n%s", output)
 	}
 }

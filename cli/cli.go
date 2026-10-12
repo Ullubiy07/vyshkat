@@ -26,17 +26,12 @@ func NewCLIHandler(inventory *service.InventoryService, scanner *bufio.Scanner, 
 
 func (h *CLIHandler) HandleRequests() {
 	for {
-		fmt.Fprintln(h.writer, "\n============Меню управления============\n",
-			"1. Добавить транспорт в парк\n",
-			"2. Добавить вещь в парк\n",
-			"3. Вывести общую дневную энергию парка\n",
-			"4. Вывести предметы для новичков\n",
-			"5. Вывести все предметы\n",
-			"6. Выход",
-		)
+		title := "============Меню управления============"
+		choices := []string{"Добавить транспорт в парк", "Добавить вещь в парк", "Вывести общую дневную энергию парка",
+			"Вывести транспорт для новичков", "Вывести все предметы", "Выход"}
 
-		choice, ok := h.readChoice(6)
-		if !ok {
+		choice, err := h.readChoice(title, choices)
+		if err != nil {
 			return
 		}
 
@@ -58,22 +53,19 @@ func (h *CLIHandler) HandleRequests() {
 }
 
 func (h *CLIHandler) handleAddVehicleToFleet() {
-	fmt.Fprintln(h.writer, "Выберите тип предмета:\n",
-		"1. Самокат\n",
-		"2. Велосипед\n",
-		"3. Электросамокат\n",
-		"4. Электровелосипед")
+	title := "Выберите тип предмета:"
+	choices := []string{"Самокат", "Велосипед", "Электросамокат", "Электровелосипед"}
 
-	choice, ok := h.readChoice(4)
-	if !ok {
+	choice, err := h.readChoice(title, choices)
+	if err != nil {
 		return
 	}
-	name, ok := h.readItemName()
-	if !ok {
+	name, err := h.readItemName()
+	if err != nil {
 		return
 	}
-	simplicity, ok := h.readSimplicity()
-	if !ok {
+	simplicity, err := h.readSimplicity()
+	if err != nil {
 		return
 	}
 
@@ -86,8 +78,8 @@ func (h *CLIHandler) handleAddVehicleToFleet() {
 	case 2:
 		item = domain.Bike{ItemInfo: &info, Simple: simplicity}
 	case 3:
-		energy, ok := h.readEnergyConsumption()
-		if !ok {
+		energy, err := h.readEnergyConsumption()
+		if err != nil {
 			return
 		}
 		scooter := domain.ElectricScooter{ItemInfo: &info, Simple: simplicity}
@@ -95,8 +87,8 @@ func (h *CLIHandler) handleAddVehicleToFleet() {
 		item = scooter
 
 	case 4:
-		energy, ok := h.readEnergyConsumption()
-		if !ok {
+		energy, err := h.readEnergyConsumption()
+		if err != nil {
 			return
 		}
 		bike := domain.ElectricBike{ItemInfo: &info, Simple: simplicity}
@@ -110,16 +102,15 @@ func (h *CLIHandler) handleAddVehicleToFleet() {
 }
 
 func (h *CLIHandler) handleAddItemToFleet() {
-	fmt.Fprintln(h.writer, "Выберите тип вещи:\n",
-		"1. Шлем\n",
-		"2. Зарядная станция")
+	title := "Выберите тип вещи:"
+	choices := []string{"Шлем", "Зарядная станция"}
 
-	choice, ok := h.readChoice(2)
-	if !ok {
+	choice, err := h.readChoice(title, choices)
+	if err != nil {
 		return
 	}
-	name, ok := h.readItemName()
-	if !ok {
+	name, err := h.readItemName()
+	if err != nil {
 		return
 	}
 
@@ -130,8 +121,8 @@ func (h *CLIHandler) handleAddItemToFleet() {
 	case 1:
 		item = domain.Helmet{ItemInfo: &info}
 	case 2:
-		energy, ok := h.readEnergyConsumption()
-		if !ok {
+		energy, err := h.readEnergyConsumption()
+		if err != nil {
 			return
 		}
 		station := domain.ChargingStation{ItemInfo: &info}
@@ -144,63 +135,83 @@ func (h *CLIHandler) handleAddItemToFleet() {
 	}
 }
 
-func (h *CLIHandler) readChoice(choiceCount int) (int, bool) {
-	if !h.scanner.Scan() {
-		fmt.Fprintln(h.writer, "Ошибка чтения:", h.scanner.Err())
-		return 0, false
+func (h *CLIHandler) readChoice(title string, choices []string) (int, error) {
+	fmt.Fprintln(h.writer, title)
+	for i, choice := range choices {
+		fmt.Fprintf(h.writer, "%d. %s\n", i+1, choice)
 	}
 
-	choice, err := strconv.Atoi(strings.TrimSpace(h.scanner.Text()))
-	if err != nil || choice < 1 || choice > choiceCount {
-		fmt.Fprintf(h.writer, "Ошибка: введите целое число от 1 до %d\n", choiceCount)
-		return 0, false
+	for {
+		if err := h.readLine(); err != nil {
+			return 0, fmt.Errorf("read line: %w", err)
+		}
+
+		choice, err := strconv.Atoi(strings.TrimSpace(h.scanner.Text()))
+		if err != nil || choice < 1 || choice > len(choices) {
+			fmt.Fprintf(h.writer, "Ошибка: введите целое число от 1 до %d\n", len(choices))
+		} else {
+			return choice, nil
+		}
 	}
-	return choice, true
 }
 
-func (h *CLIHandler) readItemName() (string, bool) {
+func (h *CLIHandler) readItemName() (string, error) {
 	fmt.Fprintln(h.writer, "Введите наименование предмета:")
-	if !h.scanner.Scan() {
-		fmt.Fprintln(h.writer, "Ошибка чтения:", h.scanner.Err())
-		return "", false
-	}
 
-	name := strings.TrimSpace(h.scanner.Text())
-	if name == "" {
-		fmt.Fprintln(h.writer, "Ошибка: название не может быть пустым")
-		return "", false
+	for {
+		if err := h.readLine(); err != nil {
+			return "", fmt.Errorf("read line: %w", err)
+		}
+
+		name := strings.TrimSpace(h.scanner.Text())
+		if name == "" {
+			fmt.Fprintln(h.writer, "Ошибка: название не может быть пустым")
+		} else {
+			return name, nil
+		}
 	}
-	return name, true
 }
 
-func (h *CLIHandler) readSimplicity() (int, bool) {
+func (h *CLIHandler) readSimplicity() (int, error) {
 	fmt.Fprintln(h.writer, "Введите простоту для новичка [1, 10]:")
-	if !h.scanner.Scan() {
-		fmt.Fprintln(h.writer, "Ошибка чтения:", h.scanner.Err())
-		return 0, false
-	}
 
-	simplicity, err := strconv.Atoi(strings.TrimSpace(h.scanner.Text()))
-	if err != nil || simplicity < 1 || simplicity > 10 {
-		fmt.Fprintln(h.writer, "Ошибка: введите целое число от 1 до 10")
-		return 0, false
+	for {
+		if err := h.readLine(); err != nil {
+			return 0, fmt.Errorf("read line: %w", err)
+		}
+
+		simplicity, err := strconv.Atoi(strings.TrimSpace(h.scanner.Text()))
+		if err != nil || simplicity < 1 || simplicity > 10 {
+			fmt.Fprintln(h.writer, "Ошибка: введите целое число от 1 до 10")
+		} else {
+			return simplicity, nil
+		}
 	}
-	return simplicity, true
 }
 
-func (h *CLIHandler) readEnergyConsumption() (int, bool) {
+func (h *CLIHandler) readEnergyConsumption() (int, error) {
 	fmt.Fprintln(h.writer, "Введите целое число - суточный расход энергии (кВт·ч):")
-	if !h.scanner.Scan() {
-		fmt.Fprintln(h.writer, "Ошибка чтения:", h.scanner.Err())
-		return 0, false
-	}
 
-	energy, err := strconv.Atoi(strings.TrimSpace(h.scanner.Text()))
-	if err != nil || energy < 0 {
-		fmt.Fprintln(h.writer, "Ошибка: введите неотрицательное целое число")
-		return 0, false
+	for {
+		if err := h.readLine(); err != nil {
+			return 0, fmt.Errorf("read line: %w", err)
+		}
+
+		energy, err := strconv.Atoi(strings.TrimSpace(h.scanner.Text()))
+		if err != nil || energy < 0 {
+			fmt.Fprintln(h.writer, "Ошибка: введите неотрицательное целое число")
+		} else {
+			return energy, nil
+		}
 	}
-	return energy, true
+}
+
+func (h *CLIHandler) readLine() error {
+	if !h.scanner.Scan() {
+		fmt.Fprintf(h.writer, "Ошибка чтения")
+		return fmt.Errorf("scan: %w", h.scanner.Err())
+	}
+	return nil
 }
 
 func (h *CLIHandler) handleTotalDailyEnergy() {
@@ -219,9 +230,9 @@ func (h *CLIHandler) handleBeginnerVehicles() {
 		return
 	}
 
-	fmt.Fprintf(h.writer, "%-17s | %-20s | %s\n", "Инвентарный номер", "Название", "Простота для новичка")
+	fmt.Fprintf(h.writer, "%-17s | %s | %s\n", "Инвентарный номер", "Простота для новичка", "Название")
 	for _, vehicle := range vehicles {
-		fmt.Fprintf(h.writer, "%-17s | %-20s | %d\n", vehicle.InventoryNumber(), vehicle.Name(), vehicle.Simplicity())
+		fmt.Fprintf(h.writer, "%-17s | %-20d | %s\n", vehicle.InventoryNumber(), vehicle.Simplicity(), vehicle.Name())
 	}
 }
 
