@@ -34,7 +34,8 @@ func (h *CLIHandler) HandleRequests() {
 		if err != nil {
 			return
 		}
-
+		
+		fmt.Fprintln(h.writer)
 		switch choice {
 		case 1:
 			h.handleAddVehicleToFleet()
@@ -49,6 +50,7 @@ func (h *CLIHandler) HandleRequests() {
 		case 6:
 			return
 		}
+		fmt.Fprintln(h.writer)
 	}
 }
 
