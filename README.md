@@ -17,6 +17,10 @@ go test -coverprofile=cover.out ./... >> /dev/null && go tool cover -func=cover.
 
 Интерфейс понятен и удобен для пользователя: в случае ввода неверных данных выведется сообщение об ошибке.
 
+# Архитектурная диаграмма
+
+![Архитектурная диаграмма](docs/diagram.png)
+
 # Применение принципов SOLID
 
 ## Single Responsibility Principle (SRP)
